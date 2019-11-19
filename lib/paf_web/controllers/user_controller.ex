@@ -12,6 +12,7 @@ defmodule PafWeb.UserController do
   def index(conn, params) do
     params
     |> Map.take(@query_options)
+    |> Enum.map(fn {key, value} -> {String.to_atom(key), value} end)
     |> Accounts.list_users()
     |> (&json(conn, &1)).()
   end
