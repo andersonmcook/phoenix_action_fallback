@@ -9,10 +9,23 @@ defmodule PafWeb.UserController do
     younger_than
   )
 
+  @take_keys ~w(
+    age
+    id
+    name
+  )a
+
+  @drop_keys ~w(
+    __meta__
+    __struct__
+  )a
+
   def index(conn, params) do
     params
     |> Map.take(@query_options)
+    |> Enum.map(fn {key, value} -> {String.to_atom(key), value} end)
     |> Accounts.list_users()
+    |> Enum.map(&Map.take(&1, @take_keys))
     |> (&json(conn, &1)).()
   end
 
@@ -21,7 +34,7 @@ defmodule PafWeb.UserController do
     |> Accounts.get_user()
     |> case do
       nil -> send_resp(conn, 404, "Not found")
-      user -> json(conn, user)
+      user -> json(conn, Map.drop(user, @drop_keys))
     end
   end
 end
